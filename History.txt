@@ -1,0 +1,23 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+2010-10-12:
+add pwm in INNOHILL_LN054IH10_010....no debug
+
+2010-10-22:
+add project Newage_LN053NA08_010.....add pt2314 drv...Network.asm
+
+2010-11-09:
+change pt2314 default volume to -17.5db
+
+2010-12-21:
+slow down i2c clk and volume up range expansion...new file for newage audio 
+switch,should merge it later..
+
+2010-12-22
+newage audio switch change to mk7a25p
+
+2011-1-5
+merage newage audio switch file to network.asm without testing...
+
+2011-10-30
+add Newage_LN053NA09...add pt2301 drv newwork.asm
+

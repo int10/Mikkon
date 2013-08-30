@@ -1,0 +1,1 @@
+convert.exe config.inc main_source.asm main.asm
