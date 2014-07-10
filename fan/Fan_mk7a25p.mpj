@@ -1,5 +1,5 @@
 [Project]
-Path=D:\Mikkon\Source\AudioDetect\
+Path=C:\Mikkon\Source\fan\
 File=$(Prj)\AudioDetect_mk7a25p.mpj
 [Language]
 LangMode=0
@@ -44,7 +44,7 @@ channel1=0
 channel2=0
 channel3=0
 [AsmFile]
-asm1=$(Prj)\AudioDetect.ASM
+asm1=$(Prj)\fan.ASM
 asm2=..\util.asm
 asm3=..\tmDrv.ASM
 asm4=..\delay.asm
