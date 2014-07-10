@@ -118,60 +118,6 @@ org 			0x0010
 
 #include "..\delay.asm"
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;init the chip
-init_chip macro
-
-	;PortA端口方向及状态设定            
-	movla      	0xff
-	movam temp_buf
-	mov temp_buf,a
-	movam PA_DIR
-	clr   		PORTA
-	;------------------------------------------------------ 
-	;PortB端口方向及状态设定  
-	movla        	b'11111111'              ;;all are input pin
-	movam temp_buf
-	bc temp_buf,bit_u1
-	bc temp_buf,bit_u2
-	mov temp_buf,a
-	movam PB_DIR
-	clr   		PORTB
-	;------------------------------------------------------
-
-	;PortC端口方向及状态设定  
-	movla        	b'11111111'              ;;all are input pin
-	movam temp_buf
-	mov temp_buf,a
-	movam PC_DIR
-	clr   		PORTC
-
-	;;;;;;;;set pull up register
-	movla b'11111111'
-	movam temp_buf
-	mov temp_buf,a
-	movam PA_PLU
-	movam PB_PLU
-	movam PC_PLU
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;personal setting
-
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;;init wtd
-	movla b'10000111'
-	movam WDT_CTL
-
-	;;;;;;;;;;;;;;;;;;;;;;;;
-	clr my_status
-	clr u1_level
-	clr u2_level
-
-	clr IRQF
-	bs IRQM,INTM
-endm
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 u1_set_level macro
@@ -243,6 +189,8 @@ u1_set_level_9
 u1_set_level_end	
 
 endm
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 u1_up_level macro
@@ -354,6 +302,63 @@ u2_down_level macro
 u2_down_level_end
 endm
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;init the chip
+init_chip macro
+
+	;PortA端口方向及状态设定            
+	movla      	0xff
+	movam temp_buf
+	mov temp_buf,a
+	movam PA_DIR
+	clr   		PORTA
+	;------------------------------------------------------ 
+	;PortB端口方向及状态设定  
+	movla        	b'11111111'              ;;all are input pin
+	movam temp_buf
+	bc temp_buf,bit_u1
+	bc temp_buf,bit_u2
+	mov temp_buf,a
+	movam PB_DIR
+	clr   		PORTB
+	;------------------------------------------------------
+
+	;PortC端口方向及状态设定  
+	movla        	b'11111111'              ;;all are input pin
+	movam temp_buf
+	mov temp_buf,a
+	movam PC_DIR
+	clr   		PORTC
+
+	;;;;;;;;set pull up register
+	movla b'11111111'
+	movam temp_buf
+	mov temp_buf,a
+	movam PA_PLU
+	movam PB_PLU
+	movam PC_PLU
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;personal setting
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;init wtd
+	movla b'10000111'
+	movam WDT_CTL
+
+	;;;;;;;;;;;;;;;;;;;;;;;;
+	clr my_status
+;	clr u1_level
+;	clr u2_level
+	movla 1
+	movam u1_level
+	movam u2_level
+	u1_set_level
+	u2_set_level
+
+	clr IRQF
+	bs IRQM,INTM
+endm
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -404,11 +409,13 @@ int_tm1 macro
 	btsc my_status,u1_status
 	lgoto int_tm1_u1_h
 	bs my_status,u1_status
+	bs set_u1
 	mov u1_preload_h,a
 	movam u1_counter
 	lgoto int_tm1_u1_end
 int_tm1_u1_h
 	bc my_status,u1_status
+	bc set_u1
 	mov u1_preload_l,a
 	movam u1_counter
 	lgoto int_tm1_u1_end
@@ -423,11 +430,13 @@ int_tm1_u1_end
 	btsc my_status,u2_status
 	lgoto int_tm1_u2_h
 	bs my_status,u2_status
+	bs set_u2
 	mov u2_preload_h,a
 	movam u2_counter
 	lgoto int_tm1_end
 int_tm1_u2_h
 	bc my_status,u2_status
+	bc set_u2
 	mov u2_preload_l,a
 	movam u2_counter
 ;	lgoto int_tm1_end
