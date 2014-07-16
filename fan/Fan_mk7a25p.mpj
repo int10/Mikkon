@@ -58,7 +58,6 @@ Defines=
 Path0=$(Prj)\
 Path1=..\
 [Watches]
-Watch0=adc_value_h adc_value_l u1_preload_l u1_preload_h u1_level u1_counter u2_status u2_preload_l u2_preload_h u2_level 
-Watch1=u2_counter u1_status my_status 
+Watch0=adc_value_h adc_value_l my_status 
 [BreakPoints]
 BP0=53,0,0  

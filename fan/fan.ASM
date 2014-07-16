@@ -35,6 +35,7 @@
 
 bit_u1		equ	PB0
 bit_u2		equ	PB1
+bit_pwm		equ PB2
 
 bit_key_down equ PC2
 bit_key_up	equ PC3
@@ -43,6 +44,7 @@ bit_key_up	equ PC3
 
 #define set_u1		PORTB,bit_u1
 #define set_u2		PORTB,bit_u2
+#define set_pwm		PORTB,bit_pwm
 
 #define test_key_down		PORTC,bit_key_down
 #define test_key_up		PORTC,bit_key_up
@@ -53,8 +55,8 @@ bit_key_up	equ PC3
 tm1_overflow				equ 		0
 test_mode_status			equ		1		;0:normal mode ,1:test mode
 
-u1_status					equ		2
-u2_status					equ		3
+u1u2_status					equ		2
+pwm_status					equ		4
 
 rx_int_status				equ		7
 
@@ -87,16 +89,16 @@ audio_detect_cur_channel	equ		0x56		;0:Right     1:Left
 audio_detect_counter		equ		0x57
 adc_compare_resut 		equ			0x58
 
-u1_preload_h				equ			0x60
-u1_preload_l				equ			0x61
-u2_preload_h				equ			0x62
-u2_preload_l				equ			0x63
+u1u2_preload_h				equ			0x60
+u1u2_preload_l				equ			0x61
 
-u1_counter					equ			0x64
-u2_counter					equ			0x65
+u1u2_counter					equ			0x62
 
-u1_level			equ				0x66
-u2_level			equ				0x67
+pwm_preload_h			equ			0x64
+pwm_preload_l			equ			0x65
+pwm_counter				equ			0x66
+pwm_level				equ			0x67
+
 
 
 
@@ -118,189 +120,103 @@ org 			0x0010
 
 #include "..\delay.asm"
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-u1_set_level macro
-	local u1_set_level_0,u1_set_level_1,u1_set_level_2,u1_set_level_3,u1_set_level_4,u1_set_level_5,u1_set_level_6,u1_set_level_7,u1_set_level_8,u1_set_level_9,u1_set_level_end
-	ej u1_level,0,u1_set_level_0
-	ej u1_level,1,u1_set_level_1
-	ej u1_level,2,u1_set_level_2
-	ej u1_level,3,u1_set_level_3
-	ej u1_level,4,u1_set_level_4
-	ej u1_level,5,u1_set_level_5
-	ej u1_level,6,u1_set_level_6
-	ej u1_level,7,u1_set_level_7
-	ej u1_level,8,u1_set_level_8
-	ej u1_level,9,u1_set_level_9
-	clr u1_level
-u1_set_level_0
-	bc set_u1
-	lgoto u1_set_level_end
-u1_set_level_1
+pwm_set_level macro
+	local pwm_set_level_0,pwm_set_level_1,pwm_set_level_2,pwm_set_level_3,pwm_set_level_4,pwm_set_level_5,pwm_set_level_6,pwm_set_level_7,pwm_set_level_8,pwm_set_level_9,pwm_set_level_end
+	ej pwm_level,0,pwm_set_level_0
+	ej pwm_level,1,pwm_set_level_1
+	ej pwm_level,2,pwm_set_level_2
+	ej pwm_level,3,pwm_set_level_3
+	ej pwm_level,4,pwm_set_level_4
+	ej pwm_level,5,pwm_set_level_5
+	ej pwm_level,6,pwm_set_level_6
+	ej pwm_level,7,pwm_set_level_7
+	ej pwm_level,8,pwm_set_level_8
+	ej pwm_level,9,pwm_set_level_9
+	clr pwm_level
+pwm_set_level_0
+	bc set_pwm
+	lgoto pwm_set_level_end
+pwm_set_level_1
 	movla 1
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 9
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_2
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_2
 	movla 2
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 8
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_3
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_3
 	movla 3
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 7
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_4
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_4
 	movla 4
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 6
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_5
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_5
 	movla 5
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 5
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_6
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_6
 	movla 6
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 4
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_7
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_7
 	movla 7
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 3
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_8
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_8
 	movla 8
-	movam u1_preload_h
+	movam pwm_preload_h
 	movla 2
-	movam u1_preload_l
-	lgoto u1_set_level_end
-u1_set_level_9
-	bs set_u1
-u1_set_level_end	
-
+	movam pwm_preload_l
+	lgoto pwm_set_level_end
+pwm_set_level_9
+	bs set_pwm
+pwm_set_level_end	
+	mov pwm_preload_h,a
+	movam pwm_counter
+	bs my_status,pwm_status
+;	bs set_pwm
 endm
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-u1_up_level macro
-	ej u1_level,.9,u1_up_level_end
-	bj u1_level,.9,u1_up_level_end
-	inc u1_level,m
-	u1_set_level
-u1_up_level_end
+pwm_up_level macro
+	ej pwm_level,.9,pwm_up_level_end
+	bj pwm_level,.9,pwm_up_level_end
+	inc pwm_level,m
+	pwm_set_level
+pwm_up_level_end
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-u1_down_level macro
-	ej u1_level,0,u1_down_level_end
-	dec u1_level,m
-	u1_set_level
-u1_down_level_end
+pwm_down_level macro
+	ej pwm_level,0,pwm_down_level_end
+	dec pwm_level,m
+	pwm_set_level
+pwm_down_level_end
 endm
 
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-u2_set_level macro
-	local u2_set_level_0,u2_set_level_1,u2_set_level_2,u2_set_level_3,u2_set_level_4,u2_set_level_5,u2_set_level_6,u2_set_level_7,u2_set_level_8,u2_set_level_9,u2_set_level_end
-	ej u2_level,0,u2_set_level_0
-	ej u2_level,1,u2_set_level_1
-	ej u2_level,2,u2_set_level_2
-	ej u2_level,3,u2_set_level_3
-	ej u2_level,4,u2_set_level_4
-	ej u2_level,5,u2_set_level_5
-	ej u2_level,6,u2_set_level_6
-	ej u2_level,7,u2_set_level_7
-	ej u2_level,8,u2_set_level_8
-	ej u2_level,9,u2_set_level_9
-	clr u2_level
-u2_set_level_0
-	bc set_u2
-	lgoto u2_set_level_end
-u2_set_level_1
-	movla 1
-	movam u2_preload_h
-	movla 9
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_2
-	movla 2
-	movam u2_preload_h
-	movla 8
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_3
-	movla 3
-	movam u2_preload_h
-	movla 7
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_4
-	movla 4
-	movam u2_preload_h
-	movla 6
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_5
-	movla 5
-	movam u2_preload_h
-	movla 5
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_6
-	movla 6
-	movam u2_preload_h
-	movla 4
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_7
-	movla 7
-	movam u2_preload_h
-	movla 3
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_8
-	movla 8
-	movam u2_preload_h
-	movla 2
-	movam u2_preload_l
-	lgoto u2_set_level_end
-u2_set_level_9
-	bs set_u2
-u2_set_level_end	
-
-endm
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-u2_up_level macro
-	ej u2_level,.9,u2_up_level_end
-	bj u2_level,.9,u2_up_level_end
-	inc u2_level,m
-	u2_set_level
-u2_up_level_end
-endm
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-u2_down_level macro
-	ej u2_level,0,u2_down_level_end
-	dec u2_level,m
-	u2_set_level
-u2_down_level_end
-endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;init the chip
@@ -318,6 +234,7 @@ init_chip macro
 	movam temp_buf
 	bc temp_buf,bit_u1
 	bc temp_buf,bit_u2
+	bc temp_buf,bit_pwm
 	mov temp_buf,a
 	movam PB_DIR
 	clr   		PORTB
@@ -347,13 +264,15 @@ init_chip macro
 
 	;;;;;;;;;;;;;;;;;;;;;;;;
 	clr my_status
-;	clr u1_level
-;	clr u2_level
 	movla 1
-	movam u1_level
-	movam u2_level
-	u1_set_level
-	u2_set_level
+	movam pwm_level
+	pwm_set_level
+
+	movla .100
+	movam u1u2_preload_h
+	movam u1u2_preload_l
+	movam u1u2_counter
+	
 
 	clr IRQF
 	bs IRQM,INTM
@@ -368,8 +287,7 @@ key_scan macro
 	m_delay_ms .80
 	btsc test_key_down
 	lgoto key_scan_check_down_end
-	u1_down_level
-	u2_down_level
+	pwm_down_level
 	lgoto key_scan_check_key_release
 key_scan_check_down_end
 	btsc test_key_up
@@ -377,8 +295,7 @@ key_scan_check_down_end
 	m_delay_ms .80
 	btsc test_key_up
 	lgoto key_scan_end
-	u1_up_level
-	u2_up_level
+	pwm_up_level
 key_scan_check_key_release
 	btss test_key_down
 	lgoto key_scan_check_key_release
@@ -401,45 +318,45 @@ int_tm1 macro
 
 	bc IRQF,TM1F
 	;;;add the code below
-	ej u1_level,0,int_tm1_u1_end
-	ej u1_level,9,int_tm1_u1_end
-	dec u1_counter,m
-	jnz int_tm1_u1_end
-	;;u1 time out
-	btsc my_status,u1_status
-	lgoto int_tm1_u1_h
-	bs my_status,u1_status
-	bs set_u1
-	mov u1_preload_h,a
-	movam u1_counter
-	lgoto int_tm1_u1_end
-int_tm1_u1_h
-	bc my_status,u1_status
-	bc set_u1
-	mov u1_preload_l,a
-	movam u1_counter
-	lgoto int_tm1_u1_end
-int_tm1_u1_end
+	ej pwm_level,0,int_tm1_pwm_end
+	ej pwm_level,9,int_tm1_pwm_end
+	dec pwm_counter,m
+	jnz int_tm1_pwm_end
+	;;pwm time out
+	btsc my_status,pwm_status
+	lgoto int_tm1_pwm_h
+	bs my_status,pwm_status
+	bs set_pwm
+	mov pwm_preload_h,a
+	movam pwm_counter
+	lgoto int_tm1_pwm_end
+int_tm1_pwm_h
+	bc my_status,pwm_status
+	bc set_pwm
+	mov pwm_preload_l,a
+	movam pwm_counter
+	lgoto int_tm1_pwm_end
+int_tm1_pwm_end
 
-
-	ej u2_level,0,int_tm1_end
-	ej u2_level,9,int_tm1_end
-	dec u2_counter,m
+int_tm1_u1u2
+	dec u1u2_counter,m
 	jnz int_tm1_end
-	;;u2 time out
-	btsc my_status,u2_status
-	lgoto int_tm1_u2_h
-	bs my_status,u2_status
-	bs set_u2
-	mov u2_preload_h,a
-	movam u2_counter
-	lgoto int_tm1_end
-int_tm1_u2_h
-	bc my_status,u2_status
+	;;;u1u2 time out
+	btsc my_status,u1u2_status
+	lgoto int_tm1_u1u2_h
+	bs my_status,u1u2_status
+	bs set_u1
 	bc set_u2
-	mov u2_preload_l,a
-	movam u2_counter
-;	lgoto int_tm1_end
+	mov u1u2_preload_h,a
+	movam u1u2_counter
+	lgoto int_tm1_end
+int_tm1_u1u2_h
+	bc my_status,u1u2_status
+	bc set_u1
+	bs set_u2
+	mov u1u2_preload_l,a
+	movam u1u2_counter
+
 int_tm1_end
 endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
