@@ -60,4 +60,4 @@ Path1=..\
 [Watches]
 Watch0=adc_value_h adc_value_l my_status 
 [BreakPoints]
-BP0=53,0,0  
+BP0=59,0,0  
