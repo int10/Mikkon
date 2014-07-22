@@ -34,7 +34,9 @@ bit_ir_in		equ	PA7
 
 bit_u1		equ	PB0
 bit_u2		equ	PB1
-bit_pwm		equ PB2
+bit_pwm		equ PB3
+bit_pwm2	equ PC0
+
 
 bit_red_led		equ	PC3
 bit_green_led	equ	PC2
@@ -50,6 +52,7 @@ bit_green_led	equ	PC2
 #define set_u1		PORTB,bit_u1
 #define set_u2		PORTB,bit_u2
 #define set_pwm		PORTB,bit_pwm
+#define set_pwm2	PORTC,bit_pwm2
 
 #define set_red_led			PORTC,bit_red_led
 #define set_green_led		PORTC,bit_green_led
@@ -383,17 +386,20 @@ pwm_set_level_8
 	lgoto pwm_set_level_end
 pwm_set_level_9
 	bs set_pwm
+	bs set_pwm2
 pwm_set_level_end	
 	mov pwm_preload_h,a
 	movam pwm_counter
 	bs my_status,pwm_status
 	bs set_pwm
+	bs set_pwm2
 endm
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 pwm_up_level macro
+	local pwm_up_level_end
 	ej pwm_level,.9,pwm_up_level_end
 	inc pwm_level,m
 	pwm_set_level
@@ -403,6 +409,7 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 pwm_down_level macro
+	local pwm_down_level_end
 	ej pwm_level,0,pwm_down_level_end
 	dec pwm_level,m
 	pwm_set_level
@@ -452,6 +459,7 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 system_set_timeout macro L_type
+	local system_set_timeout_clear,system_set_timeout_end
 	ej system_timeout_type,L_type,system_set_timeout_clear
 	movla L_type
 	movam system_timeout_type
@@ -491,6 +499,7 @@ power_off_system macro
 	bc set_u1
 	bc set_u2
 	bc set_pwm
+	bc set_pwm2
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -538,6 +547,7 @@ init_chip macro
 	movam temp_buf
 	bc temp_buf,bit_red_led
 	bc temp_buf,bit_green_led
+	bc temp_buf,bit_pwm2
 	mov temp_buf,a
 	movam PC_DIR
 	clr   		PORTC
@@ -670,6 +680,65 @@ ir_handle macro
 	btss my_status,ir_recevie_status
 	lgoto ir_handle_end
 	bc my_status,ir_recevie_status
+	ej custom_8h,0x80,ir_handle_custom_code_ok
+	ej custom_8l,0x80,ir_handle_custom_code_ok	
+	lgoto ir_handle_end
+	
+ir_handle_custom_code_ok
+	speak_flash .2
+	green_led_flash .2
+
+	ej data_8h,0x01,ir_handle_power
+	ej data_8l,0x01,ir_handle_power
+	ej data_8h,0x05,ir_handle_up
+	ej data_8l,0x05,ir_handle_up
+	ej data_8h,0x1b,ir_handle_down
+	ej data_8l,0x1b,ir_handle_down
+	ej data_8h,0x03,ir_handle_sway
+	ej data_8l,0x03,ir_handle_sway
+	ej data_8h,0x07,ir_handle_30
+	ej data_8l,0x07,ir_handle_30
+	ej data_8h,0x09,ir_handle_60
+	ej data_8l,0x09,ir_handle_60
+	ej data_8h,0x0a,ir_handle_90
+	ej data_8l,0x0a,ir_handle_90
+	ej data_8h,0x1f,ir_handle_120
+	ej data_8l,0x1f,ir_handle_120
+
+
+ir_handle_power
+	switch_power_status
+	lgoto ir_handle_end
+ir_handle_up
+	pwm_up_level
+	lgoto ir_handle_end
+ir_handle_down
+	pwm_down_level
+	lgoto ir_handle_end
+ir_handle_sway
+	switch_u1u2_working_status
+	lgoto ir_handle_end
+ir_handle_30
+	system_set_timeout .30
+	ej system_timeout_type ,0,ir_handle_end
+	green_led_flash .60
+	lgoto ir_handle_end
+ir_handle_60
+	system_set_timeout .60
+	ej system_timeout_type ,0,ir_handle_end
+	green_led_flash .60
+	lgoto ir_handle_end
+ir_handle_90
+	system_set_timeout .90
+	ej system_timeout_type ,0,ir_handle_end
+	green_led_flash .60
+	lgoto ir_handle_end
+ir_handle_120
+	system_set_timeout .120
+	ej system_timeout_type ,0,ir_handle_end
+	green_led_flash .60
+	lgoto ir_handle_end
+	
 	
 ir_handle_end
 endm
@@ -695,12 +764,14 @@ int_tm1 macro
 	lgoto int_tm1_pwm_h
 	bs my_status,pwm_status
 	bs set_pwm
+	bs set_pwm2
 	mov pwm_preload_h,a
 	movam pwm_counter
 	lgoto int_tm1_pwm_end
 int_tm1_pwm_h
 	bc my_status,pwm_status
 	bc set_pwm
+	bc set_pwm2
 	mov pwm_preload_l,a
 	movam pwm_counter
 	lgoto int_tm1_pwm_end
