@@ -105,8 +105,10 @@ bit_counter				equ			0x57
 
 
 int_tm1_10ms_counter		equ			0x58
-int_tm1_1s_counter			equ			0x59
-int_tm1_1m_counter			equ			0x5a
+int_tm1_100ms_counter		equ			0x59
+int_tm1_1s_counter			equ			0x5a
+int_tm1_1m_counter			equ			0x5b
+
 
 
 u1u2_preload_h				equ			0x60
@@ -149,18 +151,18 @@ org 			0x0010
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 turn_on_red_led macro
-	bs set_red_led
+	bc set_red_led
 endm
 turn_off_red_led macro
-	bc set_red_led
+	bs set_red_led
 endm
 turn_on_green_led macro
 	bs my_status,green_led_flash_status
-	bs set_green_led
+	bc set_green_led
 endm
 turn_off_green_led macro
 	bc my_status,green_led_flash_status
-	bc set_green_led
+	bs set_green_led
 endm
 
 
@@ -318,7 +320,7 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 pwm_set_level macro
-	local pwm_set_level_0,pwm_set_level_1,pwm_set_level_2,pwm_set_level_3,pwm_set_level_4,pwm_set_level_5,pwm_set_level_6,pwm_set_level_7,pwm_set_level_8,pwm_set_level_9,pwm_set_level_end
+	local pwm_set_level_0,pwm_set_level_1,pwm_set_level_2,pwm_set_level_3,pwm_set_level_4,pwm_set_level_5,pwm_set_level_6,pwm_set_level_7,pwm_set_level_8,pwm_set_level_9,pwm_set_level_end,pwm_set_level_reset
 	ej pwm_level,0,pwm_set_level_0
 	ej pwm_level,1,pwm_set_level_1
 	ej pwm_level,2,pwm_set_level_2
@@ -331,68 +333,69 @@ pwm_set_level macro
 	ej pwm_level,9,pwm_set_level_9
 	clr pwm_level
 pwm_set_level_0
-	movla 1
-	movam pwm_preload_h
-	movla 9
-	movam pwm_preload_l
+	bc set_pwm
+	bc set_pwm2
 	lgoto pwm_set_level_end
 pwm_set_level_1
 	movla 2
 	movam pwm_preload_h
 	movla 8
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_2
 	movla 3
 	movam pwm_preload_h
 	movla 7
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_3
 	movla 4
 	movam pwm_preload_h
 	movla 6
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_4
 	movla 5
 	movam pwm_preload_h
 	movla 5
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_5
 	movla 6
 	movam pwm_preload_h
 	movla 4
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_6
 	movla 7
 	movam pwm_preload_h
 	movla 3
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_7
 	movla 8
 	movam pwm_preload_h
 	movla 2
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_8
 	movla 9
 	movam pwm_preload_h
 	movla 1
 	movam pwm_preload_l
-	lgoto pwm_set_level_end
+	lgoto pwm_set_level_reset
 pwm_set_level_9
 	bs set_pwm
 	bs set_pwm2
-pwm_set_level_end	
+pwm_set_level_reset
+	
 	mov pwm_preload_h,a
 	movam pwm_counter
 	bs my_status,pwm_status
 	bs set_pwm
 	bs set_pwm2
+pwm_set_level_end
+	
 endm
 
 
@@ -433,12 +436,19 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 turn_on_u1u2 macro
+	bc set_u1
+	bc set_u2
+	bc my_status,u1u2_status
 	bs my_status,u1u2_working
+	
 endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 turn_off_u1u2 macro
 	bc my_status,u1u2_working
+	bc set_u1
+	bc set_u2
+	bc my_status,u1u2_status
 endm
 
 
@@ -571,7 +581,9 @@ init_chip macro
 	clr my_status
 	movla .50
 	movam int_tm1_10ms_counter
-	movla .100
+	movla .10
+	movam int_tm1_100ms_counter
+	movla .10
 	movam int_tm1_1s_counter
 	movla .60
 	movam int_tm1_1m_counter
@@ -596,8 +608,8 @@ key_scan_key_down macro
 	btsc test_key_down
 	lgoto key_scan_key_down_end
 	pwm_down_level
-	green_led_flash .2
-	speak_flash .2
+	green_led_flash .5
+	speak_flash .5
 key_scan_key_down_release
 	btss test_key_down
 	lgoto key_scan_key_down_release
@@ -615,8 +627,8 @@ key_scan_key_up macro
 	btsc test_key_up
 	lgoto key_scan_key_up_end
 	pwm_up_level
-	green_led_flash .2
-	speak_flash .2
+	green_led_flash .5
+	speak_flash .5
 key_scan_key_up_release
 	btss test_key_up
 	lgoto key_scan_key_up_release
@@ -646,8 +658,8 @@ key_scan_key_standby_long_press_check
 	lgoto key_scan_key_standby_long_press_check
 	;;key released ,not long press
 	switch_u1u2_working_status
-	green_led_flash .2
-	speak_flash .2
+	green_led_flash .5
+	speak_flash .5
 	lgoto key_scan_key_standby_end
 
 key_scan_key_standby_long_pressed
@@ -685,8 +697,8 @@ ir_handle macro
 	lgoto ir_handle_end
 	
 ir_handle_custom_code_ok
-	speak_flash .2
-	green_led_flash .2
+	speak_flash .5
+	green_led_flash .5
 
 	ej data_8h,0x01,ir_handle_power
 	ej data_8l,0x01,ir_handle_power
@@ -719,22 +731,22 @@ ir_handle_sway
 	switch_u1u2_working_status
 	lgoto ir_handle_end
 ir_handle_30
-	system_set_timeout .30
+	system_set_timeout .3
 	ej system_timeout_type ,0,ir_handle_end
 	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_60
-	system_set_timeout .60
+	system_set_timeout .3
 	ej system_timeout_type ,0,ir_handle_end
 	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_90
-	system_set_timeout .90
+	system_set_timeout .3
 	ej system_timeout_type ,0,ir_handle_end
 	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_120
-	system_set_timeout .120
+	system_set_timeout .3
 	ej system_timeout_type ,0,ir_handle_end
 	green_led_flash .60
 	lgoto ir_handle_end
@@ -754,8 +766,9 @@ int_tm1 macro
 	bc IRQF,TM1F
 	;;;add the code below
 	btss my_status,power_status
-	lgoto int_tm1_end
-	
+	lgoto int_tm1_u1u2_end
+
+	ej pwm_level,0,int_tm1_pwm_end
 	ej pwm_level,9,int_tm1_pwm_end
 	dec pwm_counter,m
 	jnz int_tm1_pwm_end
@@ -786,15 +799,15 @@ int_tm1_u1u2
 	btsc my_status,u1u2_status
 	lgoto int_tm1_u1u2_h
 	bs my_status,u1u2_status
-	bs set_u1
-	bc set_u2
+	bc set_u1
+	bs set_u2
 	mov u1u2_preload_h,a
 	movam u1u2_counter
 	lgoto int_tm1_u1u2_end
 int_tm1_u1u2_h
 	bc my_status,u1u2_status
-	bc set_u1
-	bs set_u2
+	bs set_u1
+	bc set_u2
 	mov u1u2_preload_l,a
 	movam u1u2_counter
 int_tm1_u1u2_end
@@ -807,12 +820,15 @@ int_tm1_u1u2_end
 	movla .50
 	movam int_tm1_10ms_counter
 
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	;;1s interrupt
-	dec int_tm1_1s_counter,m
+
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;100ms interrupt
+	dec int_tm1_100ms_counter,m
 	jnz int_tm1_end
-	movla .100
-	movam int_tm1_1s_counter
+	movla .10
+	movam int_tm1_100ms_counter
+
 	
 int_tm1_green_flash
 	ej green_led_flash_counter,0,int_tm1_green_flash_off
@@ -834,6 +850,16 @@ int_tm1_speaker_flash
 	jnz int_tm1_speaker_flash_end
 	bc set_speaker
 int_tm1_speaker_flash_end
+
+	
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	;;1s interrupt
+	dec int_tm1_1s_counter,m
+	jnz int_tm1_end
+	movla .10
+	movam int_tm1_1s_counter
+	
 
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
