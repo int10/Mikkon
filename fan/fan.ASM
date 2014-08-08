@@ -3,11 +3,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;use mk7a25p	
 
-#include  "mk7a25p.inc"  ;±àÒë¸ÃÎÄµµÐè°üº¬"mk7a21p.inc"ÎÄ¼þ
+#include  "mk7a25p.inc"  ;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"mk7a21p.inc"ï¿½Ä¼ï¿½
 
 
 
-;ÅäÖÃ¼Ä´æÆ÷ÉèÖÃËµÃ÷£¨CONFIG£© 
+;ï¿½ï¿½ï¿½Ã¼Ä´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½CONFIGï¿½ï¿½ 
 ;1-----------FOSC=RC    ;LS,NS,HS,RC    
 ;2-----------INRC=ON    ;ON,OFF 
 ;3-----------CPT=ON    ;ON,OFF    
@@ -78,8 +78,8 @@ rx_int_status				equ		7
 ;;memery map			;;;;  0x40~0xbf
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-a_buf					equ   		0x40   		;acc»º´æÆ÷ 
-status_buf				equ   		0x41   		;status»º´æÆ÷ 
+a_buf					equ   		0x40   		;accï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+status_buf				equ   		0x41   		;statusï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
 temp_buf				equ			0x42
 delay_counter			equ			0x43
 delay_ms_counter		equ			0x44
@@ -165,6 +165,22 @@ turn_off_green_led macro
 	bs set_green_led
 endm
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+green_led_flash macro L_s
+	turn_on_green_led
+	movla L_s
+	movam green_led_flash_counter
+endm
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+speak_flash macro L_s
+	bs set_speaker
+	movla L_s
+	movam speak_flash_counter
+endm
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -333,9 +349,14 @@ pwm_set_level macro
 	ej pwm_level,9,pwm_set_level_9
 	clr pwm_level
 pwm_set_level_0
-	bc set_pwm
-	bc set_pwm2
-	lgoto pwm_set_level_end
+;	bc set_pwm
+;	bc set_pwm2
+;	lgoto pwm_set_level_end
+	movla 1
+	movam pwm_preload_h
+	movla 9
+	movam pwm_preload_l
+	lgoto pwm_set_level_reset
 pwm_set_level_1
 	movla 2
 	movam pwm_preload_h
@@ -406,7 +427,9 @@ pwm_up_level macro
 	ej pwm_level,.9,pwm_up_level_end
 	inc pwm_level,m
 	pwm_set_level
+	green_led_flash .5
 pwm_up_level_end
+	speak_flash .5
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -416,7 +439,9 @@ pwm_down_level macro
 	ej pwm_level,0,pwm_down_level_end
 	dec pwm_level,m
 	pwm_set_level
+	green_led_flash .5
 pwm_down_level_end
+	speak_flash .5
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -431,6 +456,8 @@ switch_u1u2_working_status macro
 switch_u1u2_working_status_turn_off
 	turn_off_u1u2
 switch_u1u2_working_status_end
+	green_led_flash .5
+	speak_flash .5
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -463,6 +490,7 @@ switch_power_status macro
 switch_power_status_turn_off
 	power_off_system
 switch_power_status_end
+	speak_flash .5
 endm
 
 
@@ -474,10 +502,13 @@ system_set_timeout macro L_type
 	movla L_type
 	movam system_timeout_type
 	movam system_timeout_counter
+	green_led_flash .60
 	lgoto system_set_timeout_end
 system_set_timeout_clear
+	green_led_flash .5
 	clr system_timeout_type
 system_set_timeout_end	
+	speak_flash .5
 endm
 
 
@@ -506,34 +537,19 @@ power_off_system macro
 	turn_off_green_led
 	turn_off_u1u2
 	clr system_timeout_type
+
 	bc set_u1
 	bc set_u2
 	bc set_pwm
 	bc set_pwm2
 endm
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-green_led_flash macro L_s
-	turn_on_green_led
-	movla L_s
-	movam green_led_flash_counter
-endm
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
-speak_flash macro L_s
-	bs set_speaker
-	movla L_s
-	movam speak_flash_counter
-endm
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;init the chip
 init_chip macro
-	;PortA¶Ë¿Ú·½Ïò¼°×´Ì¬Éè¶¨            
+	;PortAï¿½Ë¿Ú·ï¿½ï¿½ï¿½×´Ì¬ï¿½è¶¨            
 	movla      	0xff
 	movam temp_buf
 	bc temp_buf,bit_speaker
@@ -541,7 +557,7 @@ init_chip macro
 	movam PA_DIR
 	clr   		PORTA
 	;------------------------------------------------------ 
-	;PortB¶Ë¿Ú·½Ïò¼°×´Ì¬Éè¶¨  
+	;PortBï¿½Ë¿Ú·ï¿½ï¿½ï¿½×´Ì¬ï¿½è¶¨  
 	movla        	b'11111111'              ;;all are input pin
 	movam temp_buf
 	bc temp_buf,bit_u1
@@ -552,7 +568,7 @@ init_chip macro
 	clr   		PORTB
 	;------------------------------------------------------
 
-	;PortC¶Ë¿Ú·½Ïò¼°×´Ì¬Éè¶¨  
+	;PortCï¿½Ë¿Ú·ï¿½ï¿½ï¿½×´Ì¬ï¿½è¶¨  
 	movla        	b'11111111'              ;;all are input pin
 	movam temp_buf
 	bc temp_buf,bit_red_led
@@ -588,11 +604,11 @@ init_chip macro
 	movla .60
 	movam int_tm1_1m_counter
 
-	
+	clr green_led_flash_counter
+	clr speak_flash_counter
 
 	power_off_system
 
-	
 	clr IRQF
 	bs IRQM,INTM
 endm
@@ -602,14 +618,16 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 key_scan_key_down macro
+	btss my_status,power_status
+	lgoto key_scan_key_down_end
 	btsc test_key_down
 	lgoto key_scan_key_down_end
 	m_delay_ms .80
 	btsc test_key_down
 	lgoto key_scan_key_down_end
 	pwm_down_level
-	green_led_flash .5
-	speak_flash .5
+;	green_led_flash .5
+;	speak_flash .5
 key_scan_key_down_release
 	btss test_key_down
 	lgoto key_scan_key_down_release
@@ -621,14 +639,17 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 key_scan_key_up macro
+	btss my_status,power_status
+	lgoto key_scan_key_up_end
+
 	btsc test_key_up
 	lgoto key_scan_key_up_end
 	m_delay_ms .80
 	btsc test_key_up
 	lgoto key_scan_key_up_end
 	pwm_up_level
-	green_led_flash .5
-	speak_flash .5
+;	green_led_flash .5
+;	speak_flash .5
 key_scan_key_up_release
 	btss test_key_up
 	lgoto key_scan_key_up_release
@@ -657,9 +678,11 @@ key_scan_key_standby_long_press_check
 	btss test_key_standby
 	lgoto key_scan_key_standby_long_press_check
 	;;key released ,not long press
+	btss my_status,power_status
+	lgoto key_scan_key_standby_end
 	switch_u1u2_working_status
-	green_led_flash .5
-	speak_flash .5
+;	green_led_flash .5
+;	speak_flash .5
 	lgoto key_scan_key_standby_end
 
 key_scan_key_standby_long_pressed
@@ -697,11 +720,15 @@ ir_handle macro
 	lgoto ir_handle_end
 	
 ir_handle_custom_code_ok
-	speak_flash .5
-	green_led_flash .5
-
 	ej data_8h,0x01,ir_handle_power
 	ej data_8l,0x01,ir_handle_power
+	
+	btss my_status,power_status
+	lgoto ir_handle_end
+	
+;	speak_flash .5
+;	green_led_flash .5
+
 	ej data_8h,0x05,ir_handle_up
 	ej data_8l,0x05,ir_handle_up
 	ej data_8h,0x1b,ir_handle_down
@@ -731,24 +758,24 @@ ir_handle_sway
 	switch_u1u2_working_status
 	lgoto ir_handle_end
 ir_handle_30
-	system_set_timeout .3
-	ej system_timeout_type ,0,ir_handle_end
-	green_led_flash .60
+	system_set_timeout .30
+;	ej system_timeout_type ,0,ir_handle_end
+;	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_60
-	system_set_timeout .3
-	ej system_timeout_type ,0,ir_handle_end
-	green_led_flash .60
+	system_set_timeout .60
+;	ej system_timeout_type ,0,ir_handle_end
+;	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_90
-	system_set_timeout .3
-	ej system_timeout_type ,0,ir_handle_end
-	green_led_flash .60
+	system_set_timeout .90
+;	ej system_timeout_type ,0,ir_handle_end
+;	green_led_flash .60
 	lgoto ir_handle_end
 ir_handle_120
-	system_set_timeout .3
-	ej system_timeout_type ,0,ir_handle_end
-	green_led_flash .60
+	system_set_timeout .120
+;	ej system_timeout_type ,0,ir_handle_end
+;	green_led_flash .60
 	lgoto ir_handle_end
 	
 	
@@ -831,15 +858,20 @@ int_tm1_u1u2_end
 
 	
 int_tm1_green_flash
-	ej green_led_flash_counter,0,int_tm1_green_flash_off
+	enj green_led_flash_counter,0,int_tm1_green_flashing
+	btsc my_status,power_status
+	lgoto int_tm1_green_flash_on
+	lgoto int_tm1_green_flash_off
+int_tm1_green_flashing
 	dec green_led_flash_counter,m
 	btsc my_status,green_led_flash_status
 	lgoto int_tm1_green_flash_off
+
+int_tm1_green_flash_on
 	turn_on_green_led
 	lgoto int_tm1_green_flash_end
 
 int_tm1_green_flash_off
-	
 	turn_off_green_led
 int_tm1_green_flash_end
 
@@ -901,7 +933,7 @@ endm
 ;;main function     it must write under the macro ,or it can't call the macro
 main fun
 	init_chip
-	start_tm1 b'01100100',0x32,0x00			;TM1Ê±ÖÓÔ´ÄÚ²¿RCÊ±ÖÓ,Ô¤·ÖÆµ1:16,Òç³öÖÜÆÚ200us,IC's clock is faster tha emulate...fix it 
+	start_tm1 b'01100100',0x32,0x00			;TM1Ê±ï¿½ï¿½Ô´ï¿½Ú²ï¿½RCÊ±ï¿½ï¿½,Ô¤ï¿½ï¿½Æµ1:16,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½200us,IC's clock is faster tha emulate...fix it 
 	;start_tm1 b'01100101',0x0d,0x3f
 	
 main_loop
