@@ -795,7 +795,7 @@ int_tm1 macro
 	btss my_status,power_status
 	lgoto int_tm1_u1u2_end
 
-	ej pwm_level,0,int_tm1_pwm_end
+;	ej pwm_level,0,int_tm1_pwm_end
 	ej pwm_level,9,int_tm1_pwm_end
 	dec pwm_counter,m
 	jnz int_tm1_pwm_end
