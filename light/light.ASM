@@ -130,6 +130,7 @@ endm
 ;;repaint light
 repaint_light macro
 	local repain_light_work_status0,repaint_light_off,repaint_light_end
+	local repaint_light_off,repaint_light_end
 	btss my_status,pw_status
 	lgoto repaint_light_off
 
@@ -210,13 +211,15 @@ endm
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;scan key
 key_scan macro
-	btss test_key_scan
+	btsc test_key_scan
 	lgoto key_scan_end
 	m_delay_ms .80
-	btss test_key_scan
+	btsc test_key_scan
 	lgoto key_scan_end
 
-	movla .15
+	key_handle
+
+	movla .25
 	movam key_scan_long_count	
 	
 key_scan_long_loop
@@ -225,25 +228,25 @@ key_scan_long_loop
 	ej key_scan_long_count,0,key_scan_long_press
 	
 	
-	btsc test_key_scan
+	btss test_key_scan
 	lgoto key_scan_long_loop
 	m_delay_ms .80
-	btsc test_key_scan
+	btss test_key_scan
 	lgoto key_scan_long_loop
 	
 
-key_scan_not_long_press
-	key_handle
+;key_scan_not_long_press
+;	key_handle
 	lgoto key_scan_end
 
 
 key_scan_long_press
 	pw_off
 key_scan_wait_release
-	btsc test_key_scan
+	btss test_key_scan
 	lgoto key_scan_wait_release
 	m_delay_ms .100
-	btsc test_key_scan
+	btss test_key_scan
 	lgoto key_scan_wait_release
 key_scan_end
 endm
