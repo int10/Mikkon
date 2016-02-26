@@ -1,5 +1,5 @@
 [Project]
-Path=C:\Mikkon\Source\light\
+Path=C:\Mikkon\Source\park\
 File=$(Prj)\light_mk7a25p.mpj
 [Language]
 LangMode=0
@@ -52,7 +52,7 @@ Path1=..\
 asm1=..\util.asm
 asm2=..\tmDrv.ASM
 asm3=..\delay.asm
-asm4=$(Prj)\light.ASM
+asm4=$(Prj)\park.ASM
 [IncFile]
 inc1=$(Prj)\mk7a25p.inc
 [Active]
