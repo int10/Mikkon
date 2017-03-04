@@ -332,7 +332,6 @@ ir_scan_end
 	en_int		;;open int
 endm
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 pwm_set_level macro
@@ -341,73 +340,31 @@ pwm_set_level macro
 	ej pwm_level,1,pwm_set_level_1
 	ej pwm_level,2,pwm_set_level_2
 	ej pwm_level,3,pwm_set_level_3
-	ej pwm_level,4,pwm_set_level_4
-	ej pwm_level,5,pwm_set_level_5
-	ej pwm_level,6,pwm_set_level_6
-	ej pwm_level,7,pwm_set_level_7
-	ej pwm_level,8,pwm_set_level_8
-	ej pwm_level,9,pwm_set_level_9
 	clr pwm_level
 pwm_set_level_0
-;	bc set_pwm
-;	bc set_pwm2
-;	lgoto pwm_set_level_end
-	movla 1
+	movla 2
 	movam pwm_preload_h
-	movla 9
+	movla 8
 	movam pwm_preload_l
 	lgoto pwm_set_level_reset
 pwm_set_level_1
-	movla 2
+	movla 4
 	movam pwm_preload_h
-	movla 8
+	movla 6
 	movam pwm_preload_l
 	lgoto pwm_set_level_reset
 pwm_set_level_2
-	movla 3
-	movam pwm_preload_h
 	movla 7
+	movam pwm_preload_h
+	movla 3
 	movam pwm_preload_l
 	lgoto pwm_set_level_reset
 pwm_set_level_3
-	movla 4
-	movam pwm_preload_h
-	movla 6
-	movam pwm_preload_l
-	lgoto pwm_set_level_reset
-pwm_set_level_4
-	movla 5
-	movam pwm_preload_h
-	movla 5
-	movam pwm_preload_l
-	lgoto pwm_set_level_reset
-pwm_set_level_5
-	movla 6
-	movam pwm_preload_h
-	movla 4
-	movam pwm_preload_l
-	lgoto pwm_set_level_reset
-pwm_set_level_6
-	movla 7
-	movam pwm_preload_h
-	movla 3
-	movam pwm_preload_l
-	lgoto pwm_set_level_reset
-pwm_set_level_7
-	movla 8
-	movam pwm_preload_h
-	movla 2
-	movam pwm_preload_l
-	lgoto pwm_set_level_reset
-pwm_set_level_8
 	movla 9
 	movam pwm_preload_h
 	movla 1
 	movam pwm_preload_l
 	lgoto pwm_set_level_reset
-pwm_set_level_9
-	bs set_pwm
-	bs set_pwm2
 pwm_set_level_reset
 	
 	mov pwm_preload_h,a
@@ -424,12 +381,12 @@ endm
 ;;
 pwm_up_level macro
 	local pwm_up_level_end
-	ej pwm_level,.9,pwm_up_level_end
+	ej pwm_level,.3,pwm_up_level_end
 	inc pwm_level,m
 	pwm_set_level
 	green_led_flash .5
-pwm_up_level_end
 	speak_flash .5
+pwm_up_level_end
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -440,8 +397,8 @@ pwm_down_level macro
 	dec pwm_level,m
 	pwm_set_level
 	green_led_flash .5
-pwm_down_level_end
 	speak_flash .5
+pwm_down_level_end
 endm
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -607,7 +564,8 @@ init_chip macro
 	clr green_led_flash_counter
 	clr speak_flash_counter
 
-	power_off_system
+	;power_off_system
+	power_on_system
 
 	clr IRQF
 	bs IRQM,INTM
@@ -796,7 +754,7 @@ int_tm1 macro
 	lgoto int_tm1_u1u2_end
 
 ;	ej pwm_level,0,int_tm1_pwm_end
-	ej pwm_level,9,int_tm1_pwm_end
+;	ej pwm_level,9,int_tm1_pwm_end
 	dec pwm_counter,m
 	jnz int_tm1_pwm_end
 	;;pwm time out
