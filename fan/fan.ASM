@@ -564,8 +564,8 @@ init_chip macro
 	clr green_led_flash_counter
 	clr speak_flash_counter
 
-	;power_off_system
-	power_on_system
+	power_off_system
+	;power_on_system
 
 	clr IRQF
 	bs IRQM,INTM
